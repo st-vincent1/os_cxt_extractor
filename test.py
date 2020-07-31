@@ -105,5 +105,5 @@ for document in collection:
         # Can't find the 11. but it is in pairs to parse; it isn't in the dictionary
         src, tgt, cxt_src, cxt_tgt = pair
         # print(src_subtitles[src[0]])
-
-    # Need to investigate the 7 second rule
+        # Check the 7 second rule
+        # Add to files
