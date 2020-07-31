@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import math
-import xml.etree.ElementTree as ET
+
 
 """
 tree = ET.parse('sample_xml.xml')
@@ -274,19 +274,4 @@ while file1 != read_file1 and file2 != read_file2:
     id_tgt = read
 
 """
-ids = open("datasets/OpenSubtitles.en-pl.ids_sample.txt")
-align = ET.parse("datasets/align_en_pl_sample.xml")
-root = align.getroot()
 
-for doc in root.iter():
-    for sub in list(doc):
-        print(sub)
-        if sub.attrib['xtargets'][-1] == ';':
-            print(sub)
-            doc.remove(sub)
-# for doc in root:
-#     for sub in doc:
-        # print(sub.attrib['xtargets'][-1])
-# tree = ET.parse('sub.xml')
-# root = tree.getroot()
-# parse_subtitles(root)
