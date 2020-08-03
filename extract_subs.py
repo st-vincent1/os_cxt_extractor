@@ -1,180 +1,7 @@
-# -*- coding: utf-8 -*-
+import xml.etree.ElementTree as ET
+import os
 import math
-
-
-"""
-tree = ET.parse('sample_xml.xml')
-root = tree.getroot()
-
-for child in root:
-    print(child.tag, child.attrib)
-
-[elem.tag for elem in root.iter()]
-# print(ET.tostring(root, encoding='utf8').decode('utf8'))
-
-
-for movie in root.iter('movie'):
-    print(movie.attrib)
-
-for description in root.iter('description'):
-    print(description.text)
-
-# Trying out with subs
-
-tree = ET.parse('sub.xml')
-root = tree.getroot()
-
-# s for subtitle, w for word
-
-for sub in root:
-    # New sub; reset timestamps & strings.
-    # for element in sub:
-    #   print(sub.attrib)
-    if sub.tag == 's':
-        if (sub.attrib['id'] == '514'):
-            for element in sub:
-                print(element.tag)
-            time_start = sub[0].attrib['value']
-            # time_end = sub[-1].attrib['value']
-            print(time_start)
-        #
-        # print(word.tag, word.attrib, word.text)
-
-print(ET.tostring(root, encoding='utf8').decode('utf8'))
-"""
-"""Types of situations:
-1. Subtitle starts, TS, subtitle, TE, subtitle ends
-    Expected outcome: standard case, assign TE-TS to subtitle
-2. Subtitle starts, TS, subtitle, subtitle ends, another subtitle starts, subtitle, TE, subtitle ends  (can repeat n times)
-    Expected outcome: Split into however many distinct subtitles there are, then broadcast time across them uniformly.
-3. Subtitle starts, TS, subtitle, TE,  TS, subtitle, TE, subtitle ends (can repeat n times)
-    Expected outcome: intermittent timestamps ignored.
-
-There are 3 different situations because the TS-TE is the time of showing 
-a subtitle on screen while the subtitle start and end is the sentence.
-What I want is to extract the subtitle as a unit regardless of how it's shown
-on screen.
-
-w = tokens; the data is already tokenised.
-
-I need to extract the data so that each subtitle is in its own line and has a timestamp to it.  
-
-
-"""
-"""
-Testing
-Example #1:
-s
-  time start
-  w
-  w
-  w
-  time end
-\s
-
-time_start = time start
-sub_count = 1
-time_end = time end
-sub_text collects all words
-split time across subs (1 time only so no splitting)
-time assigned to subtitle
-single buffer cleared to group buffer
-group buffer cleared to collection
-TEST SUCCESSFUL
-
-Example #2:
-s
-  time start
-  w
-  w
-  w
-\s
-s
-  w
-  w
-  w
-  time end
-\s
-
-time_start = time start
-sub_count = 1
-time_end = -1
-sub_text contains all words from 1st sub
-
-sub_count = 2
-sub_text cleared to group buffer
-sub_text empty
-time_end = time end
-sub_text contains all words from 2nd sub
-split time across subs; 2 subs so:
-e.g. if time_start = 5, time_end = 10
-sub1: time_start = 5, time_end = 7.5-70ms
-sub2: time_start = 7.5 + 70ms, time_end = 10
-sub2 to group buffer
-group buffer to collection
-
-TEST SUCCESSFUL
-
-Example #3:
-s
-  time start1
-  w
-  w
-  time end1
-  time start2
-  w
-  w
-  w
-  time end2
-\s
-
-time_start = time start1
-time_end = time end2
-other time stamps simply ignored.
-
-TEST SUCCESSFUL
-
-
-
-Pseudocode:
-
-for subtitle in xml:
-  take first and last element.
-  if first is time:
-    assign time to time_start
-    sub_count = 1
-  else:
-    we're in a previous show; time_start stays
-    sub_count +=1
-    clear single_buffer to group_buffer
-    start a new sub_text
-  if last is time:
-    assign time to time_end
-  else:
-    this show will continue. time_end = -1
-
-  for element in subtitle:
-    if word: # only want to read words, ignore the rest
-      add word to sub_text
-  # All words in subtitle parsed.
-  if time_end: # we're finished with this time now
-    split time across subs (#subs = sub_count) and create time stamps, assign start and end time to each subtitle (for overlap check)
-      duration = time_end - time_start
-      piece = duration / sub_count
-
-      #assign stamps to subs
-      stamp = time_start
-      for sub in group_subs:
-        sub[start] = stamp
-        sub[end] = stamp + piece - 80ms
-        stamp = stamp + piece + 80ms
-
-    clear single buffer to group buffer
-    clear group buffer for collection
-  if time_end == -1:
-    will check out itself; do nothing
-
-"""
+import sys
 
 
 def time_converter(time_str):
@@ -185,99 +12,135 @@ def time_converter(time_str):
     return msecs
 
 
-def extract_subtitles(subs_xml):
+def parse_subtitles(tree_root):
     time_start = -1
     time_end = -1
     sub_count = 0
     single_buffer = ''
     group_buffer = []
-    for sub in src:
-        if sub[0].tag == 'time':
-            time_start = time_converter(sub[0].attrib['value'])
-            sub_count = 1
-        else:
-            sub_count += 1
+    group_id = None
+    # Making a nan array to store subs
+    subtitles = dict()
+    for sub in tree_root:
+        if sub.tag == 's':
+            # Check for time start
+            if sub[0].tag == 'time':
+                time_start = time_converter(sub[0].attrib['value'])
+                sub_count = 1
+            else:
+                sub_count += 1
+            if sub[-1].tag == 'time':
+                time_end = time_converter(sub[-1].attrib['value'])
+            else:
+                time_end = -1
+            # Collecting subtitles
+            single_buffer = ""
+            for element in sub:
+                if element.tag == 'w':
+                    single_buffer = single_buffer + ' ' + element.text
+            group_buffer.append((single_buffer, sub.attrib['id']))
+            # Subtitles collected. Flush with time stamps if done
+            if time_end != -1:
+                duration = time_end - time_start
+                fragment = math.floor(duration / sub_count)
+                # print("CLEARING GROUP BUFFER")
+                # print(group_buffer)
+                # Assigning time fragments to subs
+                stamp = time_start
+                for single_sub, sub_id in group_buffer:
+                    subtitles[sub_id] = (single_sub, stamp, stamp + fragment - 80)
+                    stamp = stamp + fragment + 80
+                group_buffer = []
+                single_buffer = ''
+    return subtitles
 
-        # Clearing single_buffer for new text
-        single_buffer = ''
-        if sub[-1].tag == 'time':
-            time_end = time_converter(sub[-1].attrib['value'])
-        else:
-            time_end = -1
-        # Collecting subtitles
-        for element in sub:
-            if element.tag == 'w':
-                single_buffer = single_buffer + ' ' + element.text
-        group_buffer.append(single_buffer)
-        # Subtitles collected. Flush with time stamps if done
-        if time_end != -1:
-            print(time_end)
-            duration = time_end - time_start
-            fragment = math.floor(duration / sub_count)
-            # print("CLEARING GROUP BUFFER")
-            # print(group_buffer)
-            # Assigning time fragments to subs
-            stamp = time_start
-            for single_sub in group_buffer:
-                collection.append((single_sub, stamp, stamp + fragment - 80))
-                stamp = stamp + fragment + 80
-            group_buffer = []
-    return subs_txt
 
-
-def parse_subtitles(src, tgt):
+def write_to_file(filename, subs, indices):
     """
-    Given src and tgt subs in xml format, extract the actual subtitles and time stamps
-    :param root:
+
+    :param filename: name of file to write to
+    :param subs: dictionary containing subtitles
+    :param indices: a list of indices (str) to access subtitles from subs
+    :return:
+    """
+    with open(filename, 'a+') as f:
+        buffer = ''
+        for index in indices:
+            buffer = buffer + subs[index][0]
+        f.write(buffer + '\n')
+    return
+
+
+def parse_documents(alignment_filename):
+    """
+    Given a file with alignments of subtitles between source and target language, produce contextualised
+    sentences in .txt format of overlap of at least 0.9
+    :param alignment_filename: file which contains alignment of subtitles and paths to them
     :return:
     """
 
-    # Capturing time stamps
-    parsed_src = extract_subtitles(src)
-    parsed_tgt = extract_subtitles(tgt)
+    """
+    Part 1: Parse alignments
+    """
+    align_tree = ET.parse(alignment_filename)
+    collection = align_tree.getroot()
+    # Identify aligned files
+    for document in collection:
+        if sys.argv[1] == 'server':
+            path_to_xml = '../../datasets/OpenSubtitles/OpenSubtitles/xml'
+            path_to_output = 'out/'
+        else:
+            path_to_xml = 'datasets/OpenSubtitles/xml'
+            path_to_output = ''
 
-    return parsed_src, parsed_tgt
+        src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
+        tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
+        print("Parsing the alignment of \n {} and \n {}...".format(src_file, tgt_file))
+        cxt_src = None
+        cxt_tgt = None
+        cxt_id = None
+        pairs_to_parse = []
+        for alignment in document:
+            # if it is a pair and it has the overlap of at least 0.9
+            if 'overlap' in alignment.attrib.keys() and float(alignment.attrib['overlap']) > 0.9:
+                src, tgt = alignment.attrib['xtargets'].split(';')
+                src, tgt = src.split(), tgt.split()
+                id = int(alignment.attrib['id'][2:])
+                # Check for context; context sentence must exist and it must be the immediate previous sentence
+                if cxt_src is not None and id == cxt_id + 1:
+                    pairs_to_parse.append((src, tgt, cxt_src, cxt_tgt))
+                cxt_src, cxt_tgt, cxt_id = src, tgt, id
+        """
+        Part 2: print context and main sentences to files
+        """
+        # Parse subtitles from subtitle files
+        # Parse source text
+        src_tree = ET.parse(src_file)
+        src_root = src_tree.getroot()
+        src_subtitles = parse_subtitles(src_root)
+        # Parse target text
+        tgt_tree = ET.parse(tgt_file)
+        tgt_root = tgt_tree.getroot()
+        tgt_subtitles = parse_subtitles(tgt_root)
+        for pair in pairs_to_parse:
+            src, tgt, cxt_src, cxt_tgt = pair
+            cxt_time_end, src_time_start = src_subtitles[cxt_src[0]][2], src_subtitles[src[-1]][1]
+            time_difference = src_time_start - cxt_time_end
+            # Context and source sentence must be within 7 sec distance
+            if time_difference < 7000:  # in milliseconds
+                print(src, tgt)
+                write_to_file(os.path.join(path_to_output, 'src.txt'), src_subtitles, src)
+                write_to_file(os.path.join(path_to_output, 'tgt.txt'), tgt_subtitles, tgt)
+                write_to_file(os.path.join(path_to_output, 'cxt_src.txt'), src_subtitles, cxt_src)
+                write_to_file(os.path.join(path_to_output, 'cxt_tgt.txt'), tgt_subtitles, cxt_tgt)
 
 
-"""
-1. Open .ids file
-2. Open .xml alignment file
-Read line 1, and take both file names.
-will try to use df and numpy for this. 
-while file1 != read_file1 and file2 != read_file2:
-    ASSUME IDS ARE PARSED AND AS LISTS
-    overlap = #extract from xml file
-    if overlap > 0.9:
-        
-        src_txt = ''
-        for id in id_src:
-            txt_src += file1(where id == id))
-            txt_src += '\n'
-        for id in id_tgt:
-            txt_tgt += file1(where id == id))
-            txt_tgt += '\n'
-        
-        # Parse subtitles from xml to text format
-        parsed_src, parsed_tgt = parse_subtitles(src, tgt)
-        if cxt_src and cxt_tgt:
-            if dist(cxt_src, parsed_src) < 7000: # Distance in msec
-                update_collection(cxt_src, cxt_tgt, parsed_src, parsed_txt)
-        cxt_src = parsed_src
-        cxt_tgt = parsed_tgt
-        
-    #Read next line
-    line = f.readline().split("   ") # or something, maybe if we use dataframe I won't need to do that
-    # Below needs investigation
-    read_file2 = read from next line
-    read_file1 = read from next line
-    id_src = read
-    id_tgt = read
+if __name__ == '__main__':
+    if sys.argv[1] == 'server':
+        parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
+    else:
+        parse_documents("datasets/align_en_pl_sample.xml")
 
-"""
+    # print(src_subtitles[src[0]])
 
-
-"""
-An issue to maybe fix later: when a sub is ignored by one language (producing an "empty" alignment)
-then the sentences surrounding it may become invalidated (because we're only interested in adjacent pairs).
-Not frequent though; and probably easy to fix.
-"""
+    # Add to files
