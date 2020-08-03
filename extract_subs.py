@@ -5,14 +5,23 @@ import sys
 
 
 def time_converter(time_str):
-    time_str = time_str.replace(',', ':')
+    time_str = time_str.replace(',', ':').replace('.',':').replace(' ', '')
+
     time_str = time_str.split(':')
+    # Bugproofing
+    if len(time_str) < 4:
+        time_str.append('000')
     hours, mins, secs, msecs = list(time_str)
     msecs = int(msecs) + int(hours) * 3600000 + int(mins) * 60000 + int(secs) * 1000
     return msecs
 
 
 def parse_subtitles(tree_root):
+    """
+    Extract subtitles from xml files as text
+    :param tree_root: root of the xml tree
+    :return: subtitles : a dictionary where key is subtitle ID and value is text and timestamps
+    """
     time_start = -1
     time_end = -1
     sub_count = 0
@@ -52,6 +61,15 @@ def parse_subtitles(tree_root):
                     stamp = stamp + fragment + 80
                 group_buffer = []
                 single_buffer = ''
+    # Bugproofing: if last sub is not closed
+    if group_buffer:
+        time_end = time_start + 1000
+        duration = time_end - time_start
+        fragment = math.floor(duration / sub_count)
+        for single_sub, sub_id in group_buffer:
+            subtitles[sub_id] = (single_sub, stamp, stamp + fragment - 80)
+            stamp = stamp + fragment + 80
+        group_buffer = []
     return subtitles
 
 
