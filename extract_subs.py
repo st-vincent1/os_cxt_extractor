@@ -275,3 +275,9 @@ while file1 != read_file1 and file2 != read_file2:
 
 """
 
+
+"""
+An issue to maybe fix later: when a sub is ignored by one language (producing an "empty" alignment)
+then the sentences surrounding it may become invalidated (because we're only interested in adjacent pairs).
+Not frequent though; and probably easy to fix.
+"""

@@ -40,10 +40,10 @@ def parse_subtitles(tree_root):
             else:
                 time_end = -1
             # Collecting subtitles
+            single_buffer = ""
             for element in sub:
                 if element.tag == 'w':
                     single_buffer = single_buffer + ' ' + element.text
-            print(sub)
             group_buffer.append((single_buffer, sub.attrib['id']))
             # Subtitles collected. Flush with time stamps if done
             if time_end != -1:
@@ -61,6 +61,14 @@ def parse_subtitles(tree_root):
     return subtitles
 
 
+def write_to_file(filename, subs, indices):
+    with open(filename, 'a+') as f:
+        buffer = ''
+        for index in indices:
+            buffer = buffer + subs[index][0]
+            print(buffer)
+        f.write(buffer + '\n')
+    return
 align_tree = ET.parse("datasets/align_en_pl_sample.xml")
 collection = align_tree.getroot()
 overlap_index = dict()
@@ -82,7 +90,6 @@ for document in collection:
             if cxt_src is not None and id == cxt_id + 1:
                 pairs_to_parse.append((src, tgt, cxt_src, cxt_tgt))
             cxt_src, cxt_tgt, cxt_id = src, tgt, id
-    # print(pairs_to_parse)
     # Parse subtitles from subtitle files
     # Parse source text
     src_tree = ET.parse(src_file)
@@ -96,7 +103,7 @@ for document in collection:
     
     """
     src_subtitles = parse_subtitles(src_root)
-    # pp.pprint(src_subtitles)
+    pp.pprint(src_subtitles)
     # Parse target text
     tgt_tree = ET.parse(tgt_file)
     tgt_root = tgt_tree.getroot()
@@ -104,6 +111,14 @@ for document in collection:
     for pair in pairs_to_parse:
         # Can't find the 11. but it is in pairs to parse; it isn't in the dictionary
         src, tgt, cxt_src, cxt_tgt = pair
+        cxt_time_end, src_time_start = src_subtitles[cxt_src[0]][2], src_subtitles[src[-1]][1]
+        time_difference = src_time_start - cxt_time_end
+        # Context and source sentence must be within 7 sec distance
+        if time_difference < 7000: # in milliseconds
+            write_to_file('src.txt', src_subtitles, src)
+            write_to_file('tgt.txt', tgt_subtitles, tgt)
+            write_to_file('cxt_src.txt', src_subtitles, cxt_src)
+            write_to_file('cxt_tgt.txt', tgt_subtitles, cxt_tgt)
         # print(src_subtitles[src[0]])
-        # Check the 7 second rule
+
         # Add to files
