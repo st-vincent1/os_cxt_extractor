@@ -30,6 +30,7 @@ if __name__ == '__main__':
     indices = random.sample(range(sample_length), population_size)
     print(indices)
     for file in files:
+        file = file[4:]
         extract(file, indices, train_size, dev_size, test_size)
 
     with open('out/src.txt') as f:
