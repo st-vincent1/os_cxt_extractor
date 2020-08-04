@@ -147,10 +147,10 @@ def parse_documents(alignment_filename):
             # Context and source sentence must be within 7 sec distance
             if time_difference < 7000:  # in milliseconds
                 print(src, tgt)
-                write_to_file(os.path.join(path_to_output, 'src.txt'), src_subtitles, src)
-                write_to_file(os.path.join(path_to_output, 'tgt.txt'), tgt_subtitles, tgt)
-                write_to_file(os.path.join(path_to_output, 'cxt_src.txt'), src_subtitles, cxt_src)
-                write_to_file(os.path.join(path_to_output, 'cxt_tgt.txt'), tgt_subtitles, cxt_tgt)
+                write_to_file(os.path.join(path_to_output, 'src'), src_subtitles, src)
+                write_to_file(os.path.join(path_to_output, 'tgt'), tgt_subtitles, tgt)
+                write_to_file(os.path.join(path_to_output, 'src.context'), src_subtitles, cxt_src)
+                write_to_file(os.path.join(path_to_output, 'tgt.context'), tgt_subtitles, cxt_tgt)
 
 
 if __name__ == '__main__':
