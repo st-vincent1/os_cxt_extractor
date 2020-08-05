@@ -6,7 +6,6 @@ import sys
 
 def time_converter(time_str):
     time_str = time_str.replace(',', ':').replace('.',':').replace(' ', '')
-
     time_str = time_str.split(':')
     # Bugproofing
     if len(time_str) < 4:
@@ -23,11 +22,8 @@ def parse_subtitles(tree_root):
     :return: subtitles : a dictionary where key is subtitle ID and value is text and timestamps
     """
     time_start = -1
-    time_end = -1
     sub_count = 0
-    single_buffer = ''
     group_buffer = []
-    group_id = None
     # Making a nan array to store subs
     subtitles = dict()
     for sub in tree_root:
@@ -52,15 +48,12 @@ def parse_subtitles(tree_root):
             if time_end != -1:
                 duration = time_end - time_start
                 fragment = math.floor(duration / sub_count)
-                # print("CLEARING GROUP BUFFER")
-                # print(group_buffer)
                 # Assigning time fragments to subs
                 stamp = time_start
                 for single_sub, sub_id in group_buffer:
                     subtitles[sub_id] = (single_sub, stamp, stamp + fragment - 80)
                     stamp = stamp + fragment + 80
                 group_buffer = []
-                single_buffer = ''
     # Bugproofing: if last sub is not closed
     if group_buffer:
         time_end = time_start + 1000
@@ -158,7 +151,3 @@ if __name__ == '__main__':
         parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
     else:
         parse_documents("datasets/align_en_pl_sample.xml")
-
-    # print(src_subtitles[src[0]])
-
-    # Add to files
