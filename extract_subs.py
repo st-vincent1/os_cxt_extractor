@@ -100,9 +100,9 @@ def parse_documents(alignment_filename):
         if sys.argv[1] == 'server':
             path_to_xml = '../../datasets/OpenSubtitles/OpenSubtitles/xml'
             path_to_output = 'out/'
-        else:
-            path_to_xml = 'datasets/OpenSubtitles/xml'
-            path_to_output = ''
+        elif sys.argv[1] == 'github':
+            path_to_xml = '/OpenSubtitles/xml'
+            path_to_output = '/OpenSubtitles/parsed'
 
         src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
         tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
@@ -147,7 +147,10 @@ def parse_documents(alignment_filename):
 
 
 if __name__ == '__main__':
+    l1, l2 = sys.argv[2:4]
+    align = min(l1, l2) + '-' + max(l1, l2) + '.xml'
+
     if sys.argv[1] == 'server':
         parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
-    else:
-        parse_documents("datasets/align_en_pl_sample.xml")
+    elif sys.argv[1] == 'github':
+        parse_documents(os.path.join("./OpenSubtitles/", align))
