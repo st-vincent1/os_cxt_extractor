@@ -2,16 +2,21 @@ import xml.etree.ElementTree as ET
 import os
 import math
 import sys
+import re
 
 
 def time_converter(time_str):
     time_str = time_str.replace(',', ':').replace('.',':').replace(' ', '')
-    time_str = time_str.split(':')
+    time_str = re.split(r'[^0-9]', time_str)
     # Bugproofing
     if len(time_str) < 4:
         time_str.append('000')
-    hours, mins, secs, msecs = list(time_str)
+    try:
+        hours, mins, secs, msecs = list(time_str)
+    except:
+        print("Can't unpack values correctly")
     msecs = int(msecs) + int(hours) * 3600000 + int(mins) * 60000 + int(secs) * 1000
+        
     return msecs
 
 
@@ -101,10 +106,11 @@ def parse_documents(alignment_filename):
             path_to_xml = '../../datasets/OpenSubtitles/OpenSubtitles/xml'
             path_to_output = 'out/'
         elif sys.argv[1] == 'github':
-            path_to_xml = '/OpenSubtitles/xml'
-            path_to_output = '/OpenSubtitles/parsed'
+            path_to_xml = 'OpenSubtitles/xml'
+            path_to_output = 'OpenSubtitles/parsed'
 
         src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
+        print(src_file)
         tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
         print("Parsing the alignment of \n {} and \n {}...".format(src_file, tgt_file))
         cxt_src = None
@@ -140,10 +146,10 @@ def parse_documents(alignment_filename):
             # Context and source sentence must be within 7 sec distance
             if time_difference < 7000:  # in milliseconds
                 print(src, tgt)
-                write_to_file(os.path.join(path_to_output, 'src'), src_subtitles, src)
-                write_to_file(os.path.join(path_to_output, 'tgt'), tgt_subtitles, tgt)
-                write_to_file(os.path.join(path_to_output, 'src.context'), src_subtitles, cxt_src)
-                write_to_file(os.path.join(path_to_output, 'tgt.context'), tgt_subtitles, cxt_tgt)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, 'src'), src_subtitles, src)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, 'tgt'), tgt_subtitles, tgt)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, 'src.context'), src_subtitles, cxt_src)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, 'tgt.context'), tgt_subtitles, cxt_tgt)
 
 
 if __name__ == '__main__':
@@ -153,4 +159,4 @@ if __name__ == '__main__':
     if sys.argv[1] == 'server':
         parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
     elif sys.argv[1] == 'github':
-        parse_documents(os.path.join("./OpenSubtitles/", align))
+        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/", align))
