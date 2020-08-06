@@ -15,6 +15,7 @@ def time_converter(time_str):
         hours, mins, secs, msecs = list(time_str)
     except:
         print("Can't unpack values correctly")
+        hours, mins, secs, msecs = ['00','00', '00', '00']
     msecs = int(msecs) + int(hours) * 3600000 + int(mins) * 60000 + int(secs) * 1000
 
     return msecs
