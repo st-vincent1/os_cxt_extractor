@@ -83,7 +83,10 @@ def write_to_file(filename, subs, indices):
     with open(filename, 'a+') as f:
         buffer = ''
         for index in indices:
-            buffer = buffer + subs[index][0]
+            try:
+                buffer = buffer + subs[index][0]
+            except KeyError:
+                buffer = buffer + "-"
         f.write(buffer + '\n')
     return
 
