@@ -6,7 +6,7 @@ import re
 
 
 def time_converter(time_str):
-    time_str = time_str.replace(',', ':').replace('.',':').replace(' ', '')
+    time_str = time_str.replace(',', ':').replace('.', ':').replace(' ', '')
     time_str = re.split(r'[^0-9]', time_str)
     # Bugproofing
     if len(time_str) < 4:
@@ -16,7 +16,7 @@ def time_converter(time_str):
     except:
         print("Can't unpack values correctly")
     msecs = int(msecs) + int(hours) * 3600000 + int(mins) * 60000 + int(secs) * 1000
-        
+
     return msecs
 
 
@@ -110,7 +110,6 @@ def parse_documents(alignment_filename):
             path_to_output = 'OpenSubtitles/parsed'
 
         src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
-        print(src_file)
         tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
         print("Parsing the alignment of \n {} and \n {}...".format(src_file, tgt_file))
         cxt_src = None
@@ -132,11 +131,19 @@ def parse_documents(alignment_filename):
         """
         # Parse subtitles from subtitle files
         # Parse source text
-        src_tree = ET.parse(src_file)
+        try:
+            src_tree = ET.parse(src_file)
+        except:
+            print("Error when parsing source file")
+            pass
         src_root = src_tree.getroot()
         src_subtitles = parse_subtitles(src_root)
         # Parse target text
-        tgt_tree = ET.parse(tgt_file)
+        try:
+            tgt_tree = ET.parse(tgt_file)
+        except:
+            print("Error when parsing target file")
+            pass
         tgt_root = tgt_tree.getroot()
         tgt_subtitles = parse_subtitles(tgt_root)
         for pair in pairs_to_parse:
@@ -145,7 +152,6 @@ def parse_documents(alignment_filename):
             time_difference = src_time_start - cxt_time_end
             # Context and source sentence must be within 7 sec distance
             if time_difference < 7000:  # in milliseconds
-                print(src, tgt)
                 write_to_file(os.path.join(os.getcwd(), path_to_output, 'src'), src_subtitles, src)
                 write_to_file(os.path.join(os.getcwd(), path_to_output, 'tgt'), tgt_subtitles, tgt)
                 write_to_file(os.path.join(os.getcwd(), path_to_output, 'src.context'), src_subtitles, cxt_src)
