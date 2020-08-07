@@ -32,7 +32,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     files = ('src', 'tgt', 'src.context', 'tgt.context')
-    pairname = "{}-{}".format(args.source, args.target)
+    pairname = "{}-{}".format(min(args.languages[0], args.languages[1]), max(args.languages[0], args.languages[1]))
     input_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/parsed'.format(pairname))
     output_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/cxt_dataset'.format(pairname))
     population_size = args.train + args.dev + args.test

@@ -98,7 +98,7 @@ def parse_documents(alignment_filename, pairname):
     :param alignment_filename: file which contains alignment of subtitles and paths to them
     :return:
     """
-
+    print(alignment_filename)
     """
     Part 1: Parse alignments
     """
@@ -164,9 +164,9 @@ def parse_documents(alignment_filename, pairname):
 
 if __name__ == '__main__':
     l1, l2 = sys.argv[2:4]
-    align = min(l1, l2) + '-' + max(l1, l2) + '.xml'
+    pairname = "{}-{}".format(min(l1, l2), max(l1, l2))
 
     if sys.argv[1] == 'server':
         parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
     elif sys.argv[1] == 'github':
-        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/", align, '/', align), align)
+        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/{}/{}.xml".format(pairname, pairname)), pairname)
