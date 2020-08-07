@@ -1,23 +1,24 @@
 import sys
 import os
+import re
 import random
 import argparse
 
 
 def extract(input_file, idcs, train_size, dev_size, test_size, path_to_parsed):
-    train_name = input_file[:4] + 'train.' + input_file[4:]
-    dev_name = input_file[:4] + 'dev.' + input_file[4:]
-    test_name = input_file[:4] + 'test.' + input_file[4:]
-
+    path_to_train = os.path.join(os.getcwd(), 'OpenSubtitles/cxt_dataset')
+    names = {}
+    for name in ['train', 'dev', 'test']:
+        names[name] = re.sub(r'^([a-z][a-z][a-z])(\.*)([a-z]*)', r'\1.{}\2\3'.format(name), input_file)
     with open(os.path.join(path_to_parsed, input_file)) as i:
         input_lines = i.readlines()
-        with open(train_name, 'w+') as o:
+        with open(os.path.join(path_to_train, names['train']), 'w+') as o:
             for idx in idcs[:train_size]:
                 o.write(input_lines[idx])
-        with open(dev_name, 'w+') as o:
+        with open(os.path.join(path_to_train, names['dev']), 'w+') as o:
             for idx in idcs[train_size: train_size + dev_size]:
                 o.write(input_lines[idx])
-        with open(test_name, 'w+') as o:
+        with open(os.path.join(path_to_train, names['test']), 'w+') as o:
             for idx in idcs[train_size + dev_size: train_size + dev_size + test_size]:
                 o.write(input_lines[idx])
     return
