@@ -32,13 +32,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # Extracted subs are in OpenSubtitles/parsed
     # Need to read that as default
+    files = ['src', 'tgt', 'src.context', 'tgt.context']
     path_to_parsed = os.path.join(os.getcwd(), args.path)
-
     population_size = args.train + args.dev + args.test
-    sample_length = len(open(files[0]).readlines())
+    sample_length = len(open(os.path.join(path_to_parsed, files[0])).readlines())
     # Extracting indices of random elements for training etc. from the full corpus
     indices = random.sample(range(sample_length), population_size)
     # Extracting from files
-    files = ['src', 'tgt', 'src.context', 'tgt.context']
     for file in files:
         extract(file, indices, args.train, args.dev, args.test)
