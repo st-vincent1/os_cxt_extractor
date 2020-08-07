@@ -91,7 +91,7 @@ def write_to_file(filename, subs, indices):
     return
 
 
-def parse_documents(alignment_filename):
+def parse_documents(alignment_filename, pairname):
     """
     Given a file with alignments of subtitles between source and target language, produce contextualised
     sentences in .txt format of overlap of at least 0.9
@@ -111,7 +111,7 @@ def parse_documents(alignment_filename):
             path_to_output = 'out/'
         elif sys.argv[1] == 'github':
             path_to_xml = 'OpenSubtitles/xml'
-            path_to_output = 'OpenSubtitles/parsed'
+            path_to_output = 'OpenSubtitles/{}/parsed'.format(pairname)
 
         src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
         tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
@@ -169,4 +169,4 @@ if __name__ == '__main__':
     if sys.argv[1] == 'server':
         parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
     elif sys.argv[1] == 'github':
-        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/", align))
+        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/", align, '/', align), align)
