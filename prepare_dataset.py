@@ -4,12 +4,12 @@ import random
 import argparse
 
 
-def extract(input_file, idcs, train_size, dev_size, test_size):
+def extract(input_file, idcs, train_size, dev_size, test_size, path_to_parsed):
     train_name = input_file[:4] + 'train.' + input_file[4:]
     dev_name = input_file[:4] + 'dev.' + input_file[4:]
     test_name = input_file[:4] + 'test.' + input_file[4:]
 
-    with open(input_file) as i:
+    with open(os.path.join(path_to_parsed, input_file)) as i:
         input_lines = i.readlines()
         with open(train_name, 'w+') as o:
             for idx in idcs[:train_size]:
@@ -40,4 +40,4 @@ if __name__ == '__main__':
     indices = random.sample(range(sample_length), population_size)
     # Extracting from files
     for file in files:
-        extract(file, indices, args.train, args.dev, args.test)
+        extract(file, indices, args.train, args.dev, args.test, path_to_parsed)
