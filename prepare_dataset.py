@@ -25,9 +25,9 @@ def extract(input_file, idcs, train_size, dev_size, test_size):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train", nargs="?", default=2000000, help="Size of training data to prepare")
-    parser.add_argument("--dev", nargs="?", default=10000, help="Size of development data to prepare")
-    parser.add_argument("--test", nargs="?", default=10000, help="Size of test data to prepare")
+    parser.add_argument("--train", nargs="?", type=int, default=2000000, help="Size of training data to prepare")
+    parser.add_argument("--dev", nargs="?", type=int, default=10000, help="Size of development data to prepare")
+    parser.add_argument("--test", nargs="?", type=int, default=10000, help="Size of test data to prepare")
     parser.add_argument("-p", "--path", nargs="?", default='OpenSubtitles/parsed', help="Path to parsed subtitle data")
     args = parser.parse_args()
     # Extracted subs are in OpenSubtitles/parsed
