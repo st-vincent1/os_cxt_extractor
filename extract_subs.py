@@ -77,7 +77,7 @@ def write_to_file(filename, subs, indices):
 
     :param filename: name of file to write to
     :param subs: dictionary containing subtitles
-    :param indices: a list of indices (str) to access subtitles from subs
+    :param indices: a list of idcs (str) to access subtitles from subs
     :return:
     """
     with open(filename, 'a+') as f:
