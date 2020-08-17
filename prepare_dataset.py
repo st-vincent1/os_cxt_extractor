@@ -38,7 +38,10 @@ if __name__ == '__main__':
     population_size = args.train + args.dev + args.test
     sample_length = len(open(os.path.join(input_path, files[0])).readlines())
     # Extracting indices of random elements for training etc. from the full corpus
-    indices = random.sample(range(sample_length), population_size)
+    try:
+        indices = random.sample(range(sample_length), population_size)
+    except ValueError:
+        print("Train/dev/test split has values too large for this dataset. The size of this dataset is {}. Try lowering them down by specifying correct arguments when running prepare_dataset.py. The recommended split is {}, {}, {}.".format(sample_length, int(0.9*sample_length), int(0.05*sample_length), int(0.05*sample_length)))
     # Extracting from files
     for file in files:
         extract(file, indices, args.train, args.dev, args.test, input_path, output_path)
