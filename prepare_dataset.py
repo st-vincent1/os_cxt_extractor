@@ -8,7 +8,7 @@ import argparse
 def extract(input_file, idcs, train_size, dev_size, test_size, i_path, o_path):
     names = {}
     for name in ['train', 'dev', 'test']:
-        names[name] = re.sub(r'^([a-z][a-z][a-z])(\.*)([a-z]*)', r'\1.{}\2\3'.format(name), input_file)
+        names[name] = re.sub(r'^([a-z][a-z]\_*[a-z]*)(\.*)([a-z]*)', r'\1.{}\2\3'.format(name), input_file)
     with open(os.path.join(i_path, input_file)) as i:
         input_lines = i.readlines()
         with open(os.path.join(o_path, names['train']), 'w+') as o:
