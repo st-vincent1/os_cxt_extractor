@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument("--test", nargs="?", type=int, default=10000, help="Size of test data to prepare")
     args = parser.parse_args()
 
-    files = ('src', 'tgt', 'src.context', 'tgt.context')
+    files = (args.languages[0], args.languages[1], '{}.context'.format(args.languages[0]), '{}.context'.format(args.languages[1]))
     pairname = "{}-{}".format(min(args.languages[0], args.languages[1]), max(args.languages[0], args.languages[1]))
     input_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/parsed'.format(pairname))
     output_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/cxt_dataset'.format(pairname))
