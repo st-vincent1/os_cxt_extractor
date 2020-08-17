@@ -91,7 +91,7 @@ def write_to_file(filename, subs, indices):
     return
 
 
-def parse_documents(alignment_filename, pairname):
+def parse_documents(alignment_filename, pairname, lg1_name, lg2_name):
     """
     Given a file with alignments of subtitles between source and target language, produce contextualised
     sentences in .txt format of overlap of at least 0.9
@@ -113,60 +113,56 @@ def parse_documents(alignment_filename, pairname):
             path_to_xml = 'OpenSubtitles/xml'
             path_to_output = 'OpenSubtitles/{}/parsed'.format(pairname)
 
-        src_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
-        tgt_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
-        print("Parsing the alignment of \n {} and \n {}...".format(src_file, tgt_file))
-        cxt_src = None
-        cxt_tgt = None
+        lg1_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
+        lg2_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
+        print("Parsing the alignment of \n {} and \n {}...".format(lg1_file, lg2_file))
+        cxt_lg1 = None
+        cxt_lg2 = None
         cxt_id = None
         pairs_to_parse = []
         for alignment in document:
             # if it is a pair and it has the overlap of at least 0.9
             if 'overlap' in alignment.attrib.keys() and float(alignment.attrib['overlap']) > 0.9:
-                src, tgt = alignment.attrib['xtargets'].split(';')
-                src, tgt = src.split(), tgt.split()
+                lg1, lg2 = alignment.attrib['xtargets'].split(';')
+                lg1, lg2 = lg1.split(), lg2.split()
                 id = int(alignment.attrib['id'][2:])
                 # Check for context; context sentence must exist and it must be the immediate previous sentence
-                if cxt_src is not None and id == cxt_id + 1:
-                    pairs_to_parse.append((src, tgt, cxt_src, cxt_tgt))
-                cxt_src, cxt_tgt, cxt_id = src, tgt, id
+                if cxt_lg1 is not None and id == cxt_id + 1:
+                    pairs_to_parse.append((lg1, lg2, cxt_lg1, cxt_lg2))
+                cxt_lg1, cxt_lg2, cxt_id = lg1, lg2, id
         """
         Part 2: print context and main sentences to files
         """
         # Parse subtitles from subtitle files
         # Parse source text
         try:
-            src_tree = ET.parse(src_file)
+            lg1_tree = ET.parse(lg1_file)
         except:
             print("Error when parsing source file")
             pass
-        src_root = src_tree.getroot()
-        src_subtitles = parse_subtitles(src_root)
+        lg1_root = lg1_tree.getroot()
+        lg1_subtitles = parse_subtitles(lg1_root)
         # Parse target text
         try:
-            tgt_tree = ET.parse(tgt_file)
+            lg2_tree = ET.parse(lg2_file)
         except:
             print("Error when parsing target file")
             pass
-        tgt_root = tgt_tree.getroot()
-        tgt_subtitles = parse_subtitles(tgt_root)
+        lg2_root = lg2_tree.getroot()
+        lg2_subtitles = parse_subtitles(lg2_root)
         for pair in pairs_to_parse:
-            src, tgt, cxt_src, cxt_tgt = pair
-            cxt_time_end, src_time_start = src_subtitles[cxt_src[0]][2], src_subtitles[src[-1]][1]
-            time_difference = src_time_start - cxt_time_end
+            lg1, lg2, cxt_lg1, cxt_lg2 = pair
+            cxt_time_end, lg1_time_start = lg1_subtitles[cxt_lg1[0]][2], lg1_subtitles[lg1[-1]][1]
+            time_difference = lg1_time_start - cxt_time_end
             # Context and source sentence must be within 7 sec distance
             if time_difference < 7000:  # in milliseconds
-                write_to_file(os.path.join(os.getcwd(), path_to_output, 'src'), src_subtitles, src)
-                write_to_file(os.path.join(os.getcwd(), path_to_output, 'tgt'), tgt_subtitles, tgt)
-                write_to_file(os.path.join(os.getcwd(), path_to_output, 'src.context'), src_subtitles, cxt_src)
-                write_to_file(os.path.join(os.getcwd(), path_to_output, 'tgt.context'), tgt_subtitles, cxt_tgt)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, lg1_name), lg1_subtitles, lg1)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, lg2_name), lg2_subtitles, lg2)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, '{}.context'.format(lg1_name)), lg1_subtitles, cxt_lg1)
+                write_to_file(os.path.join(os.getcwd(), path_to_output, '{}.context'.format(lg2_name)), lg2_subtitles, cxt_lg2)
 
 
 if __name__ == '__main__':
     l1, l2 = sys.argv[2:4]
     pairname = "{}-{}".format(min(l1, l2), max(l1, l2))
-
-    if sys.argv[1] == 'server':
-        parse_documents('../../datasets/OpenSubtitles/align_en_pl.xml')
-    elif sys.argv[1] == 'github':
-        parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/{}/{}.xml".format(pairname, pairname)), pairname)
+    parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/{}/{}.xml".format(pairname, pairname)), pairname, l1, l2)

@@ -11,6 +11,10 @@ Guidelines for selecting subtitles are aligned with Voita et al. 18 and consist 
 
 Running
 ------
+1. Clone the repository.
+2. Run `pip install requirements.txt` to install requirements.
+3. 
+
 Install requirements.
 If you haven't already downloaded OpenSubtitles, run the download script:
 ```bash runs/download.sh pl ru```
