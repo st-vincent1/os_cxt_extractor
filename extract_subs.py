@@ -106,12 +106,8 @@ def parse_documents(alignment_filename, pairname, lg1_name, lg2_name):
     collection = align_tree.getroot()
     # Identify aligned files
     for document in collection:
-        if sys.argv[1] == 'server':
-            path_to_xml = '../../datasets/OpenSubtitles/OpenSubtitles/xml'
-            path_to_output = 'out/'
-        elif sys.argv[1] == 'github':
-            path_to_xml = 'OpenSubtitles/xml'
-            path_to_output = 'OpenSubtitles/{}/parsed'.format(pairname)
+        path_to_xml = 'OpenSubtitles/xml'
+        path_to_output = 'OpenSubtitles/{}/parsed'.format(pairname)
 
         lg1_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['fromDoc'][:-3])
         lg2_file = os.path.join(os.getcwd(), path_to_xml, document.attrib['toDoc'][:-3])
@@ -163,6 +159,6 @@ def parse_documents(alignment_filename, pairname, lg1_name, lg2_name):
 
 
 if __name__ == '__main__':
-    l1, l2 = sys.argv[2:4]
+    l1, l2 = sys.argv[1:3]
     pairname = "{}-{}".format(min(l1, l2), max(l1, l2))
     parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/{}/{}.xml".format(pairname, pairname)), pairname, l1, l2)
