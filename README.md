@@ -2,12 +2,12 @@ Extracting OpenSubtitles18 data for Context-Aware NMT
 ======
 General information
 ------
-This parser extracts parallel subtitles for any language pair (listed below) from the OpenSubtitles18 corpus [OpenSubtitles18 corpus page](http://opus.nlpl.eu/OpenSubtitles-v2018.php). This dataset is a scrape of TV and movie subtitles available at http://www.opensubtitles.org/.
+This parser extracts parallel subtitles for any language pair (listed below) from the [OpenSubtitles18 corpus page](http://opus.nlpl.eu/OpenSubtitles-v2018.php). This dataset is a scrape of TV and movie subtitles available at http://www.opensubtitles.org/.
 
 Guidelines for selecting subtitles are aligned with Voita et al. (2018) and consist of the following:
-1. Each sentence pair is coupled with the sentence which provides context for that pair, i.e. the immediate previous sentence spoken. Voita et al. (2018) use only source side context (English, in their case) but for completeness the present script extracts both source- and target-side context.
-2. Some cleaning is done on the dataset. The subtitles are extracted according to the alignment file (usually called align-$src-$tgt.xml), so that rather than many-to-many mappings there is always a sentence-to-sentence mapping. The .xml file provides overlap statistics for alignment and alignments with overlap below 0.9 are not considered for extraction.
-3. For context, pairs of consecutive sentences with a break between them of more than 7 seconds are not considered.
+1. **Each sentence pair is coupled with the sentence which provides context for that pair**, i.e. the immediate previous sentence spoken. Voita et al. (2018) use only source side context (English, in their case) but for completeness the present script extracts both source- and target-side context.
+2. **The dataset is cleaned of uncertain alignments and subtitle-sentence breaks.** The subtitles are extracted according to the alignment file (usually called align-$src-$tgt.xml), so that rather than many-to-many mappings there is always a sentence-to-sentence mapping. The .xml file provides overlap statistics for alignment and alignments with overlap below 0.9 are not considered for extraction.
+3. For context, **pairs of consecutive sentences with a break between them of more than 7 seconds are not considered**.
 
 Example: running for EN and FR
 ------
