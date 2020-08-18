@@ -31,17 +31,25 @@ if __name__ == '__main__':
     parser.add_argument("--test", nargs="?", type=int, default=10000, help="Size of test data to prepare")
     args = parser.parse_args()
 
-    files = (args.languages[0], args.languages[1], '{}.context'.format(args.languages[0]), '{}.context'.format(args.languages[1]))
+    files = (args.languages[0], args.languages[1], '{}.context'.format(args.languages[0]),
+             '{}.context'.format(args.languages[1]))
     pairname = "{}-{}".format(min(args.languages[0], args.languages[1]), max(args.languages[0], args.languages[1]))
     input_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/parsed'.format(pairname))
     output_path = os.path.join(os.getcwd(), 'OpenSubtitles/{}/cxt_dataset'.format(pairname))
-    population_size = args.train + args.dev + args.test
     sample_length = len(open(os.path.join(input_path, files[0])).readlines())
+
+    # Fixing train/dev/test sizes to max of what is available
+    args.train = max(args.train, 0.9 * sample_length)
+    args.dev = max(args.dev, 0.05 * sample_length)
+    args.test = max(args.test, 0.05 * sample_length)
+    population_size = args.train + args.dev + args.test
     # Extracting indices of random elements for training etc. from the full corpus
     try:
         indices = random.sample(range(sample_length), population_size)
     except ValueError:
-        print("Train/dev/test split has values too large for this dataset. The size of this dataset is {}. Try lowering them down by specifying correct arguments when running prepare_dataset.py. The recommended split is {}, {}, {}.".format(sample_length, int(0.9*sample_length), int(0.05*sample_length), int(0.05*sample_length)))
+        print(
+            "Train/dev/test split has values too large for this dataset. The size of this dataset is {}. Try lowering them down by specifying correct arguments when running prepare_dataset.py. The recommended split is {}, {}, {}.".format(
+                sample_length, int(0.9 * sample_length), int(0.05 * sample_length), int(0.05 * sample_length)))
     # Extracting from files
     for file in files:
         extract(file, indices, args.train, args.dev, args.test, input_path, output_path)
