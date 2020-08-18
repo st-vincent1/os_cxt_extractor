@@ -13,7 +13,6 @@ Example: running for EN and FR
 ------
 1. Clone the repository.
 2. Navigate to the repository.
-3. Type `pip install requirements.txt` to install requirements.
 3. Type `./run.sh en fr`. The order of languages doesn't matter.
     - The script runs `download.sh` which downloads subs from the website, `extract_subtitles.py` which extracts the subtitles from xml files, aligns and filters them and `prepare_dataset.py` which compiles them into a usable train/dev/test split.
     - By nature the procedures are bidirectional, at train time you may specify the source and target languages and adjust context files accordingly (e.g. if you want to only use source context). 
