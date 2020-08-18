@@ -1,35 +1,43 @@
-sub_extractor
+Extracting OpenSubtitles18 data for Context-Aware NMT
 ======
 General information
 ------
-This parser extracts parallel subtitles for any language pair (listed below) from the OpenSubtitles18 corpus[add link].
+This parser extracts parallel subtitles for any language pair (listed below) from the [OpenSubtitles18 corpus page](http://opus.nlpl.eu/OpenSubtitles-v2018.php). This dataset is a scrape of TV and movie subtitles available at http://www.opensubtitles.org/.
 
-Guidelines for selecting subtitles are aligned with Voita et al. 18 and consist of the following:
-1. Each sentence pair is coupled with the sentence which provides context for that pair, i.e. the immediate previous sentence spoken. Voita et al. 18 use only source side context (English, in their case) but for completeness the present script extracts both source- and target-side context.
-2. Some cleaning is done on the dataset. The subtitles are extracted according to the alignment file (usually called align-$src-$tgt.xml), so that rather than many-to-many mappings there is always a sentence-to-sentence mapping. The .xml file provides overlap statistics for alignment and alignments with overlap below 0.9 are not considered for extraction.
-3. For context, pairs of consecutive sentences with a break between them of more than 7 seconds are not considered.
+Guidelines for selecting subtitles are aligned with Voita et al. (2018) and consist of the following:
+1. **Each sentence pair is coupled with the sentence which provides context for that pair**, i.e. the immediate previous sentence spoken. Voita et al. (2018) use only source side context (English, in their case) but for completeness the present script extracts both source- and target-side context.
+2. **The dataset is cleaned of uncertain alignments and subtitle-sentence breaks.** The subtitles are extracted according to the alignment file (usually called align-$src-$tgt.xml), so that rather than many-to-many mappings there is always a sentence-to-sentence mapping. The .xml file provides overlap statistics for alignment and alignments with overlap below 0.9 are not considered for extraction.
+3. For context, **pairs of consecutive sentences with a break between them of more than 7 seconds are not considered**.
 
-Running
+Example: running for EN and FR
 ------
 1. Clone the repository.
-2. Run `pip install requirements.txt` to install requirements.
-3. 
-
-Install requirements.
-If you haven't already downloaded OpenSubtitles, run the download script:
-```bash runs/download.sh pl ru```
-If you have downloaded the subtitles before, run the next script providing the path to them. If not, the script will load the downloaded subtitles by default.
-```bash runs/extract.sh path```
-(Make sure your path directory looks like this:
-```path (e.g. OpenSubtitles)
-|-xml
-| |-pl
-| |-en
-|align.xml
+2. Navigate to the repository.
+3. Type `./run.sh en fr`. The order of languages doesn't matter.
+    - The script runs `download.sh` which downloads subs from the website, `extract_subtitles.py` which extracts the subtitles from xml files, aligns and filters them and `prepare_dataset.py` which compiles them into a usable train/dev/test split.
+    - By nature the procedures are bidirectional, at train time you may specify the source and target languages and adjust context files accordingly (e.g. if you want to only use source context). 
+4. Once the script is done, the files are saved in the following hierarchy:
 ```
-The subtitles will be extracted and stored in `path/out`.
+OpenSubtitles
+|-xml
+| |-en
+| |-fr
+|-en-fr
+| |-en-fr.xml
+| |-parsed
+| | |-raw sentences...
+| |-cxt_dataset
+| | |-train, dev, test files...
+```
 
 Available languages
 ------
-The scripts should work for any language pair available for download on OpenSubtitles, but were only tested on the selected few.
-Below is the table of language pairs available from OpenSubtitles. In bold are the pairs tested for. If the scripts don't work for your selected pair, please get in touch.
+The scripts should work for any language pair available for download on the [OpenSubtitles18 corpus page](http://opus.nlpl.eu/OpenSubtitles-v2018.php).
+
+
+References
+------
+
+Lison, P. and Tiedemann, J. (2016) 'OpenSubtitles2016: Extracting Large Parallel Corpora from Movie and TV Subtitles.', In Proceedings of the 10th International Conference on Language Resources and Evaluation (LREC 2016).
+
+Voita, E. et al. (2018) ‘Context-aware neural machine translation learns anaphora resolution’, ACL 2018 - 56th Annual Meeting of the Association for Computational Linguistics, Proceedings of the Conference (Long Papers), 1, pp. 1264–1274.
