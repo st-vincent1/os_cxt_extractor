@@ -4,7 +4,6 @@ import re
 import random
 import argparse
 
-
 def extract(input_file, idcs, train_size, dev_size, test_size, i_path, o_path):
     names = {}
     for name in ['train', 'dev', 'test']:
@@ -39,10 +38,11 @@ if __name__ == '__main__':
     sample_length = len(open(os.path.join(input_path, files[0])).readlines())
 
     # Fixing train/dev/test sizes to max of what is available
-    args.train = max(args.train, 0.9 * sample_length)
-    args.dev = max(args.dev, 0.05 * sample_length)
-    args.test = max(args.test, 0.05 * sample_length)
+    # args.train = int(max(args.train, 0.9 * sample_length))
+    # args.dev = int(max(args.dev, 0.05 * sample_length))
+    # args.test = int(max(args.test, 0.05 * sample_length))
     population_size = args.train + args.dev + args.test
+    print(population_size)
     # Extracting indices of random elements for training etc. from the full corpus
     try:
         indices = random.sample(range(sample_length), population_size)

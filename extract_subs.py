@@ -160,5 +160,6 @@ def parse_documents(alignment_filename, pairname, lg1_name, lg2_name):
 
 if __name__ == '__main__':
     l1, l2 = sys.argv[1:3]
-    pairname = "{}-{}".format(min(l1, l2), max(l1, l2))
+    l1, l2 = min(l1, l2), max(l1, l2)
+    pairname = "{}-{}".format(l1, l2)
     parse_documents(os.path.join(os.getcwd(), "OpenSubtitles/{}/{}.xml".format(pairname, pairname)), pairname, l1, l2)
